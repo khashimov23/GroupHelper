@@ -16,7 +16,7 @@ WELCOME_MESSAGES = [
     "👋 Xush kelibsiz, {name}! Guruhimizga xush kelibsiz!",
     "🎉 {name} qo'shildi! Salom, yangi do'st!",
     "🚀 {name} poyezdga chiqdi! Xush kelibsiz!",
-    "👀 {name} kirib keldi. Kim bu o'zi? 😄",
+    "👀 {name} kirib keldi. Salom!",
     "🌟 {name} — guruhimizning yangi yulduzi!",
 ]
 
@@ -27,7 +27,7 @@ GOODBYE_MESSAGES = [
     "✈️ {name} uchib ketdi. Xayr!",
 ]
 
-AUTO_DELETE_DELAY = 30  # sekundda
+AUTO_DELETE_DELAY = 40  # sekundda
 
 
 async def auto_delete(message, delay: int):
@@ -82,6 +82,40 @@ async def handle_left_member(update: Update, context: ContextTypes.DEFAULT_TYPE)
     sent = await msg.chat.send_message(text, parse_mode="HTML")
     asyncio.create_task(auto_delete(sent, delay=AUTO_DELETE_DELAY))
 
+SALOM_PATTERNS = [
+    "ассалому алейкум",
+    "ассаламу алайкум",
+    "ассалому алайкум",
+    "ассаламу алейкум",
+    "assalomu alaykum",
+    "assalomu aleykum",
+    "salom aleykum",
+    "salom alaykum",
+    "салом алейкум",
+    "salom",
+    "салом",
+]
+
+SALOM_REPLIES = [
+    "Ва алайкум ассалом, {name}! ☺️",
+    "Валайкум ассалом, {name}! ☺️",
+    "Va alaykum assalom, {name}! ☺️",
+]
+
+async def handle_salom(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    msg = update.message
+    if not msg or not msg.text:
+        return
+
+    text = msg.text.lower().strip()
+
+    for pattern in SALOM_PATTERNS:
+        if pattern in text:
+            name = msg.from_user.mention_html()
+            reply = random.choice(SALOM_REPLIES).format(name=name)
+            await msg.reply_text(reply, parse_mode="HTML")
+            return
+
 
 def main():
     if not TOKEN:
@@ -98,6 +132,10 @@ def main():
     app.add_handler(
         MessageHandler(filters.StatusUpdate.LEFT_CHAT_MEMBER, handle_left_member)
     )
+    app.add_handler(
+        MessageHandler(filters.TEXT & ~filters.COMMAND, handle_salom)
+    )
+
 
     print("✅ Bot ishga tushdi!")
 
