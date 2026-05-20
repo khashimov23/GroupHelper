@@ -86,8 +86,9 @@ async def handle_left_member(update: Update, context: ContextTypes.DEFAULT_TYPE)
 def main():
     if not TOKEN:
         print("❌ BOT_TOKEN environment variable topilmadi!")
-        print("   export BOT_TOKEN='your-token-here' qiling")
         return
+
+    import asyncio
 
     app = ApplicationBuilder().token(TOKEN).build()
 
@@ -99,6 +100,9 @@ def main():
     )
 
     print("✅ Bot ishga tushdi!")
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
     app.run_polling(drop_pending_updates=True)
 
 
