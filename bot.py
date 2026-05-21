@@ -3,7 +3,26 @@ import logging
 import asyncio
 import random
 from telegram import Update
-from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
+from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes, CommandHandler
+
+# Guruhlarni saqlash uchun set
+active_groups = set()
+
+async def track_group(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Har xabar kelganda guruhni yozib oladi."""
+    msg = update.message
+    if msg and msg.chat.type in ("group", "supergroup"):
+        active_groups.add(msg.chat.id)
+
+async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Bot statistikasi — faqat sizga ishlaydi."""
+    OWNER_ID = 1306814987
+    
+    if update.message.from_user.id != OWNER_ID:
+        return
+
+    text = f"📊 Bot statistikasi:\n\n👥 Guruhlar soni: {len(active_groups)}"
+    await update.message.reply_text(text)
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -135,7 +154,8 @@ def main():
     app.add_handler(
         MessageHandler(filters.TEXT & ~filters.COMMAND, handle_salom)
     )
-
+    app.add_handler(MessageHandler(filters.ALL, track_group), group=1)
+    app.add_handler(CommandHandler("stats", stats_command))
 
     print("✅ Bot ishga tushdi!")
 
