@@ -5,24 +5,35 @@ import random
 from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes, CommandHandler
 
-# Guruhlarni saqlash uchun set
-active_groups = set()
+active_groups = {}  # dict — {chat_id: chat_info}
 
 async def track_group(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Har xabar kelganda guruhni yozib oladi."""
     msg = update.message
     if msg and msg.chat.type in ("group", "supergroup"):
-        active_groups.add(msg.chat.id)
+        chat = msg.chat
+        active_groups[chat.id] = {
+            "title": chat.title,
+            "username": chat.username,
+        }
 
 async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Bot statistikasi — faqat sizga ishlaydi."""
-    OWNER_ID = 1306814987
-    
+    OWNER_ID = 1306814987  # O'zingizning Telegram ID
+
     if update.message.from_user.id != OWNER_ID:
         return
 
-    text = f"📊 Bot statistikasi:\n\n👥 Guruhlar soni: {len(active_groups)}"
-    await update.message.reply_text(text)
+    text = f"📊 Bot statistikasi:\n\n👥 Guruhlar soni: {len(active_groups)}\n"
+
+    for i, (chat_id, info) in enumerate(active_groups.items(), 1):
+        title = info["title"] or "Nomsiz"
+        if info.get("username"):
+            text += f"\n{i}. <a href='https://t.me/{info['username']}'>{title}</a>"
+        else:
+            text += f"\n{i}. {title} (private)"
+
+    await update.message.reply_text(text, parse_mode="HTML", disable_web_page_preview=True)
+
+
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
