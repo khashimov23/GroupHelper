@@ -45,14 +45,11 @@ TOKEN = os.environ.get("BOT_TOKEN", "")
 WELCOME_MESSAGES = [
     "👋 Xush kelibsiz, {name}! Guruhimizga xush kelibsiz!",
     "🎉 {name} qo'shildi! Salom, yangi do'st!",
-    "🚀 {name} poyezdga chiqdi! Xush kelibsiz!",
     "👀 {name} kirib keldi. Salom!",
-    "🌟 {name} — guruhimizning yangi yulduzi!",
 ]
 
 GOODBYE_MESSAGES = [
     "👋 {name} ketdi. Xayr, ko'rishguncha!",
-    "🚪 {name} chiqib ketdi. Eshik ochiq qoldi...",
     "😢 {name} bizni tark etdi. Qaytib keling!",
     "✈️ {name} uchib ketdi. Xayr!",
 ]
@@ -122,8 +119,6 @@ SALOM_PATTERNS = [
     "salom aleykum",
     "salom alaykum",
     "салом алейкум",
-    "salom",
-    "салом",
 ]
 
 SALOM_REPLIES = [
@@ -143,7 +138,9 @@ async def handle_salom(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if pattern in text:
             name = msg.from_user.mention_html()
             reply = random.choice(SALOM_REPLIES).format(name=name)
-            await msg.reply_text(reply, parse_mode="HTML")
+            
+            sent = await msg.reply_text(reply, parse_mode="HTML")
+            asyncio.create_task(auto_delete(sent, delay=AUTO_DELETE_DELAY))
             return
 
 
